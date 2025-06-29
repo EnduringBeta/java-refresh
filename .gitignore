@@ -1,8 +1,10 @@
-HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+.DS_Store
+*.log
 
 ### STS ###
 .apt_generated
