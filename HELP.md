@@ -49,3 +49,7 @@ curl -X POST "http://localhost:8080/upsert" \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "age": 31, "profession": "Senior Engineer"}'
 ```
+
+## Summary
+
+This branch represents what I accomplished in the OXOS interview where I built out the rest of the... REST CRUD for users. The last 2 tasks were to ask an LLM to build a web page for user CRUD, which Copilot kept trying to do Thymeleaf but ChatGPT got it in 1; and trying to containerize the program (where I didn't have Docker installed) but explored a `Dockerfile`.

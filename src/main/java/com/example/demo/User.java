@@ -1,10 +1,13 @@
 package com.example.demo;
 
 public class User {
+    private long id;
     private String name;
     private int age;
     private String profession;
 
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public int getAge() { return age; }
@@ -15,7 +18,8 @@ public class User {
     // Default constructor needed for JSON deserialization
     public User() {}
 
-    public User(String name, int age, String profession) {
+    public User(long id, String name, int age, String profession) {
+        this.id = id;
         this.name = name;
         this.age = age;
         this.profession = profession;
@@ -23,7 +27,7 @@ public class User {
 
     @Override
     public String toString() {
-        return name + " (" + age + ", " + profession + ")";
+        return name + " (" + id + ", " + age + ", " + profession + ")";
     }
 
     

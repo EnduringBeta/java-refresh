@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User CRUD</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    input[type="number"], input[type="text"] { width: 100%; box-sizing: border-box; }
+    .form-group { margin-bottom: 1em; }
+    .btn { padding: 0.4em 1em; margin-right: 0.5em; cursor: pointer; }
+    .btn-delete { background: #f44336; color: white; }
+    .btn-update { background: #2196F3; color: white; }
+    .btn-create { background: #4CAF50; color: white; }
+  </style>
+</head>
+<body>
+  <h1>User CRUD Interface</h1>
+
+  <form id="userForm">
+    <div class="form-group">
+      <label>ID (for update only):</label>
+      <input type="number" id="id" placeholder="Leave blank to create new">
+    </div>
+    <div class="form-group">
+      <label>Name:</label>
+      <input type="text" id="name" required>
+    </div>
+    <div class="form-group">
+      <label>Age:</label>
+      <input type="number" id="age" required>
+    </div>
+    <div class="form-group">
+      <label>Profession:</label>
+      <input type="text" id="profession" required>
+    </div>
+    <button type="submit" class="btn btn-create">Create/Update User</button>
+  </form>
+
+  <h2>All Users</h2>
+  <table id="userTable">
+    <thead>
+      <tr>
+        <th>ID</th><th>Name</th><th>Age</th><th>Profession</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiBase = '/users';
+
+    async function fetchUsers() {
+      const res = await fetch(apiBase);
+      const users = await res.json();
+      renderUsers(users);
+    }
+
+    function renderUsers(users) {
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '';
+      users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${user.id}</td>
+          <td>${user.name}</td>
+          <td>${user.age}</td>
+          <td>${user.profession}</td>
+          <td>
+            <button class="btn btn-update" onclick='editUser(${JSON.stringify(user)})'>Edit</button>
+            <button class="btn btn-delete" onclick='deleteUser(${user.id})'>Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editUser(user) {
+      document.getElementById('id').value = user.id;
+      document.getElementById('name').value = user.name;
+      document.getElementById('age').value = user.age;
+      document.getElementById('profession').value = user.profession;
+    }
+
+    async function deleteUser(id) {
+      if (!confirm(`Are you sure you want to delete user ${id}?`)) return;
+      await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
+      fetchUsers();
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = document.getElementById('id').value;
+      const name = document.getElementById('name').value;
+      const age = document.getElementById('age').value;
+      const profession = document.getElementById('profession').value;
+
+      const userData = {
+        id: id ? Number(id) : 0,
+        name,
+        age: Number(age),
+        profession
+      };
+
+      await fetch(apiBase + '/', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+
+      document.getElementById('userForm').reset();
+      fetchUsers();
+    });
+
+    fetchUsers();
+  </script>
+</body>
+</html>

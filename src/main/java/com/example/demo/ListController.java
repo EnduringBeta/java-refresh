@@ -8,8 +8,12 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,19 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ListController {
     // Using CopyOnWriteArrayList for thread safety
     private final List<User> users = new CopyOnWriteArrayList<>(Arrays.asList(
-        new User("Alice", 30, "Engineer"),
-        new User("Bob", 25, "Designer"),
-        new User("Charlie", 35, "Engineer"),
-        new User("Diana", 28, "Manager")
+        new User(0, "Alice", 30, "Engineer"),
+        new User(1, "Bob", 25, "Designer"),
+        new User(2, "Charlie", 35, "Engineer"),
+        new User(3, "Diana", 28, "Manager")
     ));
 
-    private final HashMap<String, User> userMap = new HashMap<>();
+    private final HashMap<Long, User> userMap = new HashMap<>();
 
     // Constructor to initialize the userMap
     public ListController() {
         // Add all initial users to map
         for (User user : users) {
-            userMap.put(user.getName(), user);
+            userMap.put(user.getId(), user);
         }
     }
 
@@ -45,9 +49,46 @@ public class ListController {
         return users;
     }
 
-    @GetMapping("/user")
-    public User getUser(@RequestParam(required = true) String name) {
-        return userMap.get(name);
+    @GetMapping("/users")
+    public List<User> getUser() {
+        return userMap.values().stream()
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable long id) {
+        return userMap.get(id);
+    }
+
+    @PutMapping("/users/")
+    public User putUser(@RequestBody(required = true) User user) {
+        // Check if user already exists
+        if (userMap.containsKey(user.getId())) {
+            // Update existing user
+            User existingUser = userMap.get(user.getId());
+            existingUser.setName(user.getName());
+            existingUser.setAge(user.getAge());
+            existingUser.setProfession(user.getProfession());
+            return existingUser;
+        } else {
+            long newId = userMap.size() + 1; // Generate new ID
+            user.setId(newId);
+
+            // Add new user
+            users.add(user);
+            userMap.put(user.getId(), user);
+            return user;
+        }
+    }
+
+    @DeleteMapping("/users/{id}")
+    public Boolean deleteUser(@PathVariable long id) {
+        User user = userMap.remove(id);
+        if (user != null) {
+            users.remove(user);
+            return true;
+        }
+        return false;
     }
 
     @PostMapping("/upsert")
@@ -57,7 +98,7 @@ public class ListController {
         // Add user if name not already present
         if (!existing.isPresent()) {
             users.add(user);
-            userMap.put(user.getName(), user);
+            userMap.put(user.getId(), user);
             return true;
         }
 
@@ -83,7 +124,7 @@ public class ListController {
 
         if (isChanged) {
             // Update the user in the map
-            userMap.put(existingUser.getName(), existingUser);
+            userMap.put(existingUser.getId(), existingUser);
         }
 
         return isChanged;
